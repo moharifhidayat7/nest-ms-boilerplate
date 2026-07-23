@@ -12,39 +12,38 @@ src/
 ├── integrations/
 │   ├── prisma/
 │   │   ├── prisma.module.ts
-│   │   ├── prisma.service.ts  ← extends PrismaClient, wired to ConfigService
+│   │   └── prisma.service.ts
 │   └── graphql/
 │       └── graphql.module.ts  ← Apollo driver config
 │
 ├── common/
 │   ├── auth/
 │   │   ├── auth.module.ts
-│   │   ├── auth.guard.ts          ← base guard class
-│   │   ├── internal.guard.ts      ← validates internal JWT directly
-│   │   ├── external.guard.ts      ← calls Auth Service for validation
-│   │   ├── current-user.decorator.ts ← @CurrentUser() param decorator
+│   │   ├── auth.guard.ts          ← base guard
+│   │   ├── internal.guard.ts      ← validates internal JWT
+│   │   ├── external.guard.ts      ← calls Auth Service
+│   │   ├── current-user.decorator.ts
+│   │   ├── internal-token.service.ts  ← generates outgoing JWTs
 │   │   ├── token-validator.ts     ← abstract class + JwtPayload type
 │   │   └── strategies/
 │   │       ├── internal-jwt.validator.ts
 │   │       └── remote-auth.validator.ts
 │   ├── config/
-│   │   └── env.config.ts          ← Joi validation schema for all env vars
+│   │   └── env.config.ts
 │   ├── decorators/
 │   │   └── skip-response-wrap.decorator.ts
 │   ├── filters/
-│   │   └── global-exception.filter.ts  ← consistent error envelope
+│   │   └── global-exception.filter.ts
 │   ├── interceptors/
-│   │   ├── logging.interceptor.ts   ← request log
-│   │   └── response.interceptor.ts  ← wraps responses in { statusCode, message, data, meta }
+│   │   ├── logging.interceptor.ts
+│   │   └── response.interceptor.ts
 │   └── pagination/
 │       ├── pagination.dto.ts
 │       └── pagination.interface.ts
 │
 ├── modules/
-│   ├── empty/                    ← template module, copy to create new ones
+│   ├── empty/
 │   └── health/
-│       ├── health.module.ts
-│       └── health.controller.ts  ← GET /health (prisma ping)
 │
 └── prisma/
     ├── schema.prisma
@@ -63,17 +62,14 @@ src/
 ```bash
 pnpm install
 pnpm prisma generate
-cp .env.example .env          # or edit existing .env
+cp .env.example .env
 ```
 
 ## Running
 
 ```bash
-# development
-pnpm start:dev
-
-# production
-pnpm start:prod
+pnpm start:dev      # development
+pnpm start:prod     # production
 ```
 
 ## Tests
@@ -83,34 +79,65 @@ pnpm test          # unit (Jest)
 pnpm test:e2e      # e2e (supertest)
 ```
 
+## Environment
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `DATABASE_URL` | yes | — | PostgreSQL connection string |
+| `INTERNAL_JWT_SECRET` | yes | — | Shared secret for signing/verifying internal JWTs |
+| `AUTH_SERVICE_URL` | yes | — | Auth service base URL |
+| `SERVICE_NAME` | no | `unknown` | Identity used when generating internal tokens |
+| `PORT` | no | `3000` | HTTP port |
+| `NODE_ENV` | no | `development` | `development`, `production`, `test` |
+
 ## Auth
 
 Two guards available per endpoint:
 
 | Guard | Validator | Use case |
 |---|---|---|
-| `ExternalAuthGuard` | `RemoteAuthValidator` → calls Auth Service `POST /auth/validate-token` | Client-facing endpoints |
-| `InternalAuthGuard` | `InternalJwtValidator` → verifies JWT with shared secret | Service-to-service |
+| `ExternalAuthGuard` | `RemoteAuthValidator` — calls Auth Service `POST /auth/validate-token` | Client-facing |
+| `InternalAuthGuard` | `InternalJwtValidator` — verifies short-lived JWT with shared secret | Service-to-service |
+
+### Client-facing
 
 ```ts
 @UseGuards(ExternalAuthGuard)
 @Get('users')
 getUsers() { ... }
-
-@UseGuards(InternalAuthGuard)
-@Get('internal/data')
-getInternalData() { ... }
 ```
 
-## Environment
+### Service-to-service
 
-| Variable | Required | Default | Description |
-|---|---|---|---|
-| `DATABASE_URL` | yes | — | PostgreSQL connection string |
-| `INTERNAL_JWT_SECRET` | yes | — | Secret for service-to-service JWT |
-| `AUTH_SERVICE_URL` | yes | — | Auth service base URL |
-| `PORT` | no | `3000` | HTTP port |
-| `NODE_ENV` | no | `development` | `development`, `production`, `test` |
+Service A generates a fresh JWT (5 min expiry), Service B verifies it.
+
+**Service A — sending the request:**
+
+```ts
+import { InternalTokenService } from './common/auth/internal-token.service';
+
+@Injectable()
+export class NotificationClient {
+  constructor(private readonly tokenService: InternalTokenService) {}
+
+  async notify(userId: string) {
+    const token = this.tokenService.generate();
+    await fetch('http://notification-service/internal/send', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  }
+}
+```
+
+**Service B — receiving the request:**
+
+```ts
+@UseGuards(InternalAuthGuard)
+@Post('internal/send')
+async send(@Body() body: SendDto, @CurrentUser() user: JwtPayload) {
+  console.log(user.sub); // 'schedule-service' — identifies the caller
+}
+```
 
 ## API
 
@@ -151,6 +178,6 @@ docker run -p 3000:3000 --env-file .env schedule-service
 
 ```bash
 cp -r src/modules/empty src/modules/orders
-# Rename files and class names Empty → Order
+# Rename files Empty → Order
 # Add use-cases, inject guards, register in AppModule
 ```

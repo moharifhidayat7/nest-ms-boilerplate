@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { InternalJwtValidator } from './strategies/internal-jwt.validator';
 import { RemoteAuthValidator } from './strategies/remote-auth.validator';
+import { InternalJwtValidator } from './strategies/internal-jwt.validator';
 import { InternalAuthGuard } from './internal.guard';
 import { ExternalAuthGuard } from './external.guard';
+import { InternalTokenService } from './internal-token.service';
 
 @Module({
   imports: [
@@ -13,7 +14,7 @@ import { ExternalAuthGuard } from './external.guard';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         secret: config.get<string>('INTERNAL_JWT_SECRET'),
-        signOptions: { expiresIn: '1h' },
+        signOptions: { expiresIn: '5m' },
       }),
     }),
   ],
@@ -22,7 +23,8 @@ import { ExternalAuthGuard } from './external.guard';
     RemoteAuthValidator,
     InternalAuthGuard,
     ExternalAuthGuard,
+    InternalTokenService,
   ],
-  exports: [InternalAuthGuard, ExternalAuthGuard],
+  exports: [InternalAuthGuard, ExternalAuthGuard, InternalTokenService],
 })
 export class AuthModule {}
