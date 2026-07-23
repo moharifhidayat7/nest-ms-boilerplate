@@ -15,11 +15,29 @@ export class RemoteAuthValidator extends TokenValidator {
   }
 
   async validate(token: string): Promise<JwtPayload> {
-    const { data } = await axios.post<JwtPayload>(
-      `${this.url}/auth/validate-token`,
-      { token },
+    const query = `
+      mutation ValidateToken($token: String!) {
+        validateToken(token: $token) {
+          sub
+          email
+          roles
+        }
+      }
+    `;
+
+    const { data } = await axios.post<{
+      data?: { validateToken: JwtPayload };
+      errors?: Array<{ message: string }>;
+    }>(
+      `${this.url}/graphql`,
+      { query, variables: { token } },
       { timeout: this.timeoutMs },
     );
-    return data;
+
+    if (data.errors?.length) {
+      throw new Error(data.errors[0].message);
+    }
+
+    return data.data!.validateToken;
   }
 }
