@@ -1,5 +1,6 @@
 allowBuilds:
   '@apollo/protobufjs': true
   '@prisma/engines': true
+  msgpackr-extract: true
   prisma: true
   unrs-resolver: true
