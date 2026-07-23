@@ -1,6 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
 import {
-  HealthCheck,
   HealthCheckService,
   PrismaHealthIndicator,
 } from '@nestjs/terminus';
@@ -14,7 +13,7 @@ export class HealthController {
     private readonly prismaIndicator: PrismaHealthIndicator,
     private readonly prisma: PrismaService,
     private readonly redisHealth: RedisHealthIndicator,
-  ) {}
+  ) { }
 
   check() {
     return this.health.check([
