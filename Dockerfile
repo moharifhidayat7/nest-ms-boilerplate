@@ -17,8 +17,8 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 COPY --from=builder /app/package.json /app/pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile --offline --prod
-
+RUN pnpm install --frozen-lockfile --prod --ignore-scripts \
+ && pnpm rebuild @prisma/engines @prisma/client @prisma/adapter-pg
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/generated ./dist/generated
 
