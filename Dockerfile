@@ -9,22 +9,19 @@ COPY . .
 RUN pnpm install --frozen-lockfile --offline
 RUN pnpm prisma generate --schema=prisma/schema.prisma
 RUN pnpm build
-RUN pnpm prune --prod && rm -rf \
-  /app/node_modules/.pnpm/prisma@*/ \
-  /app/node_modules/.pnpm/typescript@*/ \
-  /app/node_modules/.pnpm/@prisma+studio-core@*/ \
-  /app/node_modules/.pnpm/effect@*/ \
-  /app/node_modules/.pnpm/@electric-sql+*/
 
-FROM gcr.io/distroless/nodejs22-debian12 AS runner
+FROM node:22-alpine AS runner
 WORKDIR /app
 
-ENV NODE_ENV=production
+ENV NODE_ENV=production \
+  PATH=/app/node_modules/.bin:$PATH
 
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/generated ./dist/generated
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/package.json ./
 
 EXPOSE 3000
 
-CMD ["dist/src/main.js"]
+CMD ["node", "dist/src/main.js"]

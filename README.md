@@ -83,12 +83,27 @@ pnpm test:e2e      # e2e (supertest)
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `DATABASE_URL` | yes | — | PostgreSQL connection string |
-| `INTERNAL_JWT_SECRET` | yes | — | Shared secret for signing/verifying internal JWTs |
-| `AUTH_SERVICE_URL` | yes | — | Auth service base URL |
-| `SERVICE_NAME` | no | `unknown` | Identity used when generating internal tokens |
 | `PORT` | no | `3000` | HTTP port |
+| `SERVICE_NAME` | no | `unknown` | Identity used when generating internal tokens |
 | `NODE_ENV` | no | `development` | `development`, `production`, `test` |
+| `DB_HOST` | no | `localhost` | PostgreSQL host |
+| `DB_PORT` | no | `5432` | PostgreSQL port |
+| `DB_USER` | no | `postgres` | PostgreSQL user |
+| `DB_PASSWORD` | no | `postgres` | PostgreSQL password |
+| `DB_NAME` | no | `auth_service` | PostgreSQL database name |
+| `DATABASE_URL` | yes | — | Full connection string (used by Prisma CLI) |
+| `INTERNAL_JWT_SECRET` | yes | — | Shared secret for signing/verifying internal JWTs |
+| `AUTH_SERVICE_URL` | yes | — | Auth service GraphQL endpoint |
+| `REDIS_HOST` | no | `localhost` | Redis host |
+| `REDIS_PORT` | no | `6379` | Redis port |
+| `REDIS_PASSWORD` | no | — | Redis password |
+| `REDIS_DB` | no | `0` | Redis database index |
+| `MAIL_HOST` | yes | — | SMTP host |
+| `MAIL_PORT` | no | `587` | SMTP port |
+| `MAIL_USER` | no | — | SMTP user |
+| `MAIL_PASSWORD` | no | — | SMTP password |
+| `MAIL_FROM` | no | `noreply@example.com` | Default sender address |
+| `MAIL_TEMPLATE_DIR` | no | `./templates/mail` | Handlebars template directory |
 
 ## Auth
 
@@ -96,19 +111,8 @@ Two guards available per endpoint:
 
 | Guard | Validator | Use case |
 |---|---|---|
-| `ExternalAuthGuard` | `RemoteAuthValidator` — calls Auth Service `POST /auth/validate-token` | Client-facing |
+| `ExternalAuthGuard` | `RemoteAuthValidator` — calls Auth Service via GraphQL mutation `validateToken` | Client-facing |
 | `InternalAuthGuard` | `InternalJwtValidator` — verifies short-lived JWT with shared secret | Service-to-service |
-
-### Client-facing
-
-```ts
-@UseGuards(ExternalAuthGuard)
-@Get('users')
-getUsers() { ... }
-```
-
-### Service-to-service
-
 Service A generates a fresh JWT (5 min expiry), Service B verifies it.
 
 **Service A — sending the request:**
@@ -169,9 +173,49 @@ POST /graphql
 
 ## Docker
 
+### Build
+
 ```bash
-docker build -t schedule-service .
-docker run -p 3000:3000 --env-file .env schedule-service
+podman build -t nest-ms-boilerplate:latest .
+# or
+docker build -t nest-ms-boilerplate:latest .
+```
+
+### docker-compose
+
+```yaml
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: auth_service
+      POSTGRES_PASSWORD: postgres
+    ports: [5432:5432]
+    healthcheck:
+      test: pg_isready -U postgres
+
+  redis:
+    image: redis:7-alpine
+    ports: [6379:6379]
+
+  app:
+    build: .
+    env_file: .env
+    ports: [3000:3000]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+```
+
+### Migrations
+
+```bash
+# Connect to running container and apply pending migrations
+docker-compose exec app prisma migrate deploy
+# or
+podman exec -it <container> prisma migrate deploy
 ```
 
 ## Creating a new module
