@@ -13,7 +13,7 @@ import { InternalTokenService } from './internal-token.service';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        secret: config.get<string>('auth.internalJwtSecret'),
+        secret: config.get<string>('INTERNAL_JWT_SECRET'),
         signOptions: { expiresIn: '5m' },
       }),
     }),

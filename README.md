@@ -9,10 +9,19 @@ src/
 ├── app.module.ts              ← root module
 ├── main.ts                    ← bootstrap with CORS, ValidationPipe, shutdown hooks
 │
+├── config/
+│   └── env-vars.schema.ts     ← Joi validation schema for all env vars
+│
 ├── integrations/
 │   ├── prisma/
 │   │   ├── prisma.module.ts
 │   │   └── prisma.service.ts
+│   ├── redis/
+│   │   ├── redis.module.ts
+│   │   ├── redis.service.ts
+│   │   └── redis.health.ts
+│   ├── bullmq/
+│   │   └── bullmq.module.ts
 │   └── graphql/
 │       └── graphql.module.ts  ← Apollo driver config
 │
@@ -28,8 +37,6 @@ src/
 │   │   └── strategies/
 │   │       ├── internal-jwt.validator.ts
 │   │       └── remote-auth.validator.ts
-│   ├── config/
-│   │   └── env.config.ts
 │   ├── decorators/
 │   │   └── skip-response-wrap.decorator.ts
 │   ├── filters/
@@ -43,12 +50,58 @@ src/
 │
 ├── modules/
 │   ├── empty/
-│   └── health/
+│   │   ├── empty.module.ts
+│   │   ├── empty.service.ts
+│   │   ├── rest/web/
+│   │   │   ├── empty.controller.ts
+│   │   │   └── dto/
+│   │   │       └── create-empty.request.ts
+│   │   ├── rest/mobile/
+│   │   │   ├── empty.controller.ts
+│   │   │   └── dto/
+│   │   │       └── create-empty.request.ts
+│   │   ├── graphql/
+│   │   │   ├── empty.resolver.ts
+│   │   │   ├── types/
+│   │   │   │   └── empty.type.ts
+│   │   │   └── inputs/
+│   │   │       ├── create-empty.input.ts
+│   │   │       └── update-empty.input.ts
+│   │   └── use-cases/
+│   │       ├── create-empty.use-case.ts
+│   │       ├── get-empty.use-case.ts
+│   │       ├── get-empties.use-case.ts
+│   │       ├── update-empty.use-case.ts
+│   │       └── delete-empty.use-case.ts
+│   ├── health/
+│   │   ├── health.controller.ts
+│   │   └── health.module.ts
+│   └── mail/
+│       ├── mail.module.ts
+│       ├── mail.service.ts
+│       ├── mail.processor.ts
+│       ├── mail.constants.ts
+│       ├── interfaces/
+│       │   └── mail.interface.ts
+│       └── templates/
 │
 └── prisma/
     ├── schema.prisma
     └── seed/
         └── index.ts
+```
+
+## Configuration
+
+All environment variables are validated at startup via a Joi schema in `src/config/env-vars.schema.ts`.
+No config factories, no `registerAs`, no namespacing — values are accessed directly by their env var name
+through NestJS `ConfigService`:
+
+```ts
+constructor(private config: ConfigService) {
+  const host = config.get<string>('REDIS_HOST');
+  const port = config.get<number>('REDIS_PORT');
+}
 ```
 
 ## Prerequisites

@@ -16,12 +16,12 @@ export class MailProcessor extends WorkerHost {
   constructor(private readonly config: ConfigService) {
     super();
     this.transporter = nodemailer.createTransport({
-      host: this.config.get<string>('mail.host'),
-      port: this.config.get<number>('mail.port'),
-      auth: this.config.get<string>('mail.user')
+      host: this.config.get<string>('MAIL_HOST'),
+      port: this.config.get<number>('MAIL_PORT'),
+      auth: this.config.get<string>('MAIL_USER')
         ? {
-            user: this.config.get<string>('mail.user'),
-            pass: this.config.get<string>('mail.password'),
+            user: this.config.get<string>('MAIL_USER'),
+            pass: this.config.get<string>('MAIL_PASSWORD'),
           }
         : undefined,
     });
@@ -52,7 +52,7 @@ export class MailProcessor extends WorkerHost {
       return cached(context);
     }
 
-    const templateDir = this.config.get<string>('mail.templateDir') ?? './templates/mail';
+    const templateDir = this.config.get<string>('MAIL_TEMPLATE_DIR') ?? './templates/mail';
     const source = await readFile(join(templateDir, `${name}.hbs`), 'utf-8');
     const template = handlebars.compile(source);
     this.templateCache.set(name, template);

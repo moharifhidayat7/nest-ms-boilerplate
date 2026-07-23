@@ -6,10 +6,10 @@ import Redis from 'ioredis';
 export class RedisService extends Redis implements OnModuleInit, OnModuleDestroy {
   constructor(config: ConfigService) {
     super({
-      host: config.get<string>('redis.host'),
-      port: config.get<number>('redis.port'),
-      password: config.get<string>('redis.password'),
-      db: config.get<number>('redis.db'),
+      host: config.get<string>('REDIS_HOST'),
+      port: config.get<number>('REDIS_PORT'),
+      password: config.get<string>('REDIS_PASSWORD'),
+      db: config.get<number>('REDIS_DB'),
       lazyConnect: true,
     });
   }

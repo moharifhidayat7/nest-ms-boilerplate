@@ -9,7 +9,7 @@ import { AuthModule } from './common/auth/auth.module';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
-import { appConfig, databaseConfig, authConfig, redisConfig, mailConfig } from './config/env.config';
+import { envVarsSchema } from './config/env-vars.schema';
 import { RedisModule } from './integrations/redis/redis.module';
 import { BullMqModule } from './integrations/bullmq/bullmq.module';
 import { MailModule } from './modules/mail/mail.module';
@@ -18,7 +18,7 @@ import { MailModule } from './modules/mail/mail.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig, databaseConfig, authConfig, redisConfig, mailConfig],
+      validationSchema: envVarsSchema,
     }),
     RedisModule,
     BullMqModule,
