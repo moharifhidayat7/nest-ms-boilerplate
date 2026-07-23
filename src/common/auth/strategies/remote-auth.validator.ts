@@ -10,7 +10,7 @@ export class RemoteAuthValidator extends TokenValidator {
 
   constructor(config: ConfigService) {
     super();
-    this.url = config.get<string>('AUTH_SERVICE_URL', 'http://localhost:4000');
+    this.url = config.get<string>('auth.authServiceUrl', 'http://localhost:4000');
     this.timeoutMs = 2000;
   }
 

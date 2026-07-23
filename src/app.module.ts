@@ -9,13 +9,13 @@ import { AuthModule } from './common/auth/auth.module';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
-import { envValidationSchema } from './common/config/env.config';
+import { appConfig, databaseConfig, authConfig } from './config/env.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      validationSchema: envValidationSchema,
+      load: [appConfig, databaseConfig, authConfig],
     }),
     PrismaModule,
     GraphqlModule,
