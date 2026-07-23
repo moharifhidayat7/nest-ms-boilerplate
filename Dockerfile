@@ -16,11 +16,12 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
+COPY --from=builder /app/package.json /app/pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile --offline --prod
+
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./
-COPY --from=builder /app/generated ./generated
+COPY --from=builder /app/generated ./dist/generated
 
 EXPOSE 3000
 
-CMD ["node", "dist/main"]
+CMD ["node", "dist/src/main.js"]
