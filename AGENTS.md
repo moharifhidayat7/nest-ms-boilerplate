@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-**Schedule Service** — NestJS microservice boilerplate with GraphQL + REST, Prisma ORM, Redis cache/queues, and pluggable auth. A single-deployment NestJS v11 app that communicates with other services via HTTP + JWT (not a microservice mesh within this repo).
+**Nest Microservice Boilerplate** — NestJS microservice boilerplate with GraphQL + REST, Prisma ORM, Redis cache/queues, and pluggable auth. A single-deployment NestJS v11 app that communicates with other services via HTTP + JWT (not a microservice mesh within this repo).
 
 ## Architecture & Data Flow
 

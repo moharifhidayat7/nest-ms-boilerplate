@@ -1,4 +1,4 @@
-# Schedule Service
+# Nest Microservice
 
 NestJS microservice boilerplate with GraphQL + REST, Prisma ORM, and pluggable auth.
 
