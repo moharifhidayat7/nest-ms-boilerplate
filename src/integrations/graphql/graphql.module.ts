@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin/landingPage/default";
+import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
 
 @Module({
   imports: [
@@ -10,7 +10,7 @@ import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin
       autoSchemaFile: true,
       playground: false,
       introspection: true,
-      plugins: [ApolloServerPluginLandingPageLocalDefault()]
+      plugins: [ApolloServerPluginLandingPageLocalDefault()],
     }),
   ],
 })
