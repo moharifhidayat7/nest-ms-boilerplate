@@ -8,6 +8,7 @@ import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { SKIP_RESPONSE_WRAP } from '../decorators/skip-response-wrap.decorator';
+import { PAGINATED } from '../decorators/paginated.decorator';
 
 @Injectable()
 export class ResponseInterceptor implements NestInterceptor {
@@ -24,29 +25,36 @@ export class ResponseInterceptor implements NestInterceptor {
     ]);
     if (skip) return next.handle();
 
+    const paginated = this.reflector.getAllAndOverride<boolean>(PAGINATED, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
     const response = context.switchToHttp().getResponse();
     const statusCode = response.statusCode;
 
     return next.handle().pipe(
       map((result: unknown) => {
         const res = result as Record<string, unknown> | null;
-        const hasPagination =
-          res &&
-          typeof res === 'object' &&
-          'meta' in res &&
-          res.meta &&
-          typeof res.meta === 'object' &&
-          'pagination' in (res.meta as Record<string, unknown>);
+
+        if (paginated) {
+          return {
+            statusCode,
+            message: 'Success',
+            data: res?.data ?? result,
+            meta: {
+              timestamp: new Date().toISOString(),
+              pagination: (res?.meta as Record<string, unknown>)?.pagination ?? null,
+            },
+          };
+        }
 
         return {
           statusCode,
           message: 'Success',
-          data: hasPagination ? (res as Record<string, unknown>).data : result,
+          data: result,
           meta: {
             timestamp: new Date().toISOString(),
-            ...(hasPagination
-              ? { pagination: (res as Record<string, unknown>).meta }
-              : {}),
           },
         };
       }),
