@@ -15,6 +15,7 @@ export class HealthController {
     private readonly redisHealth: RedisHealthIndicator,
   ) { }
 
+  @Get()
   check() {
     return this.health.check([
       () => this.prismaIndicator.pingCheck('database', this.prisma),
