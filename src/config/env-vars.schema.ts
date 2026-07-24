@@ -29,5 +29,4 @@ export const envVarsSchema = Joi.object({
   MAIL_USER: Joi.string().allow('').optional(),
   MAIL_PASSWORD: Joi.string().allow('').optional(),
   MAIL_FROM: Joi.string().default('noreply@example.com'),
-  MAIL_TEMPLATE_DIR: Joi.string().default('./templates/mail'),
 });

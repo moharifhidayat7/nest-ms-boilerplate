@@ -51,9 +51,7 @@ export class MailProcessor extends WorkerHost {
     if (cached) {
       return cached(context);
     }
-
-    const templateDir = this.config.get<string>('MAIL_TEMPLATE_DIR') ?? './templates/mail';
-    const source = await readFile(join(templateDir, `${name}.hbs`), 'utf-8');
+    const source = await readFile(join('./templates/mail', `${name}.hbs`), 'utf-8');
     const template = handlebars.compile(source);
     this.templateCache.set(name, template);
     return template(context);

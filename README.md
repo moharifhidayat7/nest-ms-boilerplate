@@ -156,7 +156,6 @@ pnpm test:e2e      # e2e (supertest)
 | `MAIL_USER` | no | — | SMTP user |
 | `MAIL_PASSWORD` | no | — | SMTP password |
 | `MAIL_FROM` | no | `noreply@example.com` | Default sender address |
-| `MAIL_TEMPLATE_DIR` | no | `./templates/mail` | Handlebars template directory |
 
 ## Auth
 
