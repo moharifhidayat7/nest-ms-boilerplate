@@ -12,7 +12,7 @@ import { GlobalExceptionFilter } from './common/filters/global-exception.filter'
 import { envVarsSchema } from './config/env-vars.schema';
 import { RedisModule } from './integrations/redis/redis.module';
 import { BullMqModule } from './integrations/bullmq/bullmq.module';
-import { MailModule } from './modules/mail/mail.module';
+import { MailModule } from './common/mail/mail.module';
 
 @Module({
   imports: [
